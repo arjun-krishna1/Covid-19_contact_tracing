@@ -8,27 +8,60 @@ using namespace std;
 // CONSTRUCTOR AND DESTRUCTOR
 
 // PURPOSE: Default/empty constructor
-ContactGraph::ContactGraph()
-{
-}
+ContactGraph::ContactGraph(){}
 
 //Get the number of nodes in this graph
-int ContactGraph::get_num_nodes() {
+int ContactGraph::get_num_nodes()
+{
 	return nodes.size();
 }
 
-void ContactGraph::insert(vector<string>node_id, vector<bool>node_status) {
-	if(node_id.size()==0||node_id.size()!=node_status.size()) return;
+bool ContactGraph::does_edge_exist(string person1_id, string person2_id) {
+	GraphNode* person1 = find_node(person1_id);
+	GraphNode* person2 = find_node(person2_id);
+
+	// If they are not in the graph return false
+	if(person1==NULL||person2==NULL) return false;
+
+	bool edge_exists = false;
+	for(GraphEdge* edge: edges[person1->loc]->connections) {
+		if(edge->ending_location==person2) edge_exists=true;
+	}
+
+	return edge_exists;
+}
+bool ContactGraph::insert(vector<string> node_id, vector<bool> node_status)
+{
+	if (node_id.size() == 0 || node_id.size() != node_status.size())
+		return false;
 
 	int start_loc = nodes.size();
-	for(int i=0; i<node_id.size(); i++) {
-		nodes.push_back(new GraphNode(GraphNode(node_id[i],node_status[i],start_loc)));
+	for (int i = 0; i < node_id.size(); i++)
+	{
+		GraphNode* current =new GraphNode(GraphNode(node_id[i], node_status[i], start_loc));
+		nodes.push_back(current);
+		edges.push_back(new GraphEdges(GraphEdges(current)));
 		start_loc++;
 	}
-	
-	return;
+	return true;
 }
-ContactGraph::GraphNode *ContactGraph::find_node(string person_id)
+
+bool ContactGraph::add_edge(string person1_id, string person2_id) {
+	GraphNode* person1 = find_node(person1_id);
+	GraphNode* person2 = find_node(person2_id);
+
+	//If the people are not in the graph
+	if(person1==NULL||person2==NULL) return false;
+
+	//Go to person1's linked list and add a new connection to person2
+	edges[person1->loc]->connections.push_back(new GraphEdge(person2));
+	//Go to person2's linked list and add a new connection to person1
+	edges[person2->loc]->connections.push_back(new GraphEdge(person1));
+	
+	return true;
+}
+
+ContactGraph::GraphNode* ContactGraph::find_node(string person_id)
 {
 	// base case
 	if (person_id == "" || nodes.size() == 0)
@@ -104,5 +137,3 @@ int ContactGraph::count_virus_positive_contacts(string person_id)
 
 	return positive_contacts;
 }
-
-
