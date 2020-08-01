@@ -53,15 +53,8 @@ public:
 	// PURPOSE: Default/empty constructor
 	ContactGraph();
 
-	// PURPOSE: Explicit destructor of the class BinarySearchTree
-	~ContactGraph();
-
-	// ACCESSORS
-	// PURPOSE: Returns the number of nodes in the tree
-	unsigned int get_num_nodes() const;
-	unsigned int get_num_edges() const;
-
-	GraphNode* find_node(string person_id, int&loc);
+	// PURPOSE: Find a node given its id and find its o
+	GraphNode* find_node(string person_id);
 	// PURPOSE: traverse the graph starting at person_id and count the distinct individuals 
 	// who tested positive who are directly connected to the starting individual
 	int count_virus_positive_contacts(string person_id);

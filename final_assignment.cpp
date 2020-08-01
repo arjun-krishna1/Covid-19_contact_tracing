@@ -13,12 +13,11 @@ ContactGraph::ContactGraph() {
 	num_edges=0;
 }
 
-ContactGraph::GraphNode* ContactGraph::find_node(string person_id, int&loc) {
+ContactGraph::GraphNode* ContactGraph::find_node(string person_id) {
 	// base case
 	if(person_id==""||nodes.size()==0) return NULL;
 	//Look for the person in nodes
 	for(int i = 0; i < nodes.size();i++) {
-		loc=i;
 		if(person_id==nodes[i]->id) return nodes[i];
 	}
 	//if not found return null
@@ -34,8 +33,7 @@ int ContactGraph::count_virus_positive_contacts(string person_id) {
 
 	*/
 	//Get the starting node
-	int loc;
-	GraphNode* start = find_node(person_id, loc);
+	GraphNode* start = find_node(person_id);
 
 	// If they are not in the graph 
 	if(start==NULL) return 0;
