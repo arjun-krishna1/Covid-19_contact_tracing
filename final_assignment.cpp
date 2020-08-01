@@ -82,11 +82,14 @@ ContactGraph::GraphNode *ContactGraph::find_node(string person_id)
 	return NULL;
 }
 
-bool ContactGraph::node_in_list(ContactGraph::GraphNode *current, vector<ContactGraph::GraphNode *> list){
-	bool exists=false;
-	for(ContactGraph::GraphNode* node:list) {
-		if(node->id==current->id) {
-			exists=true;
+bool ContactGraph::node_in_list(ContactGraph::GraphNode *current, vector<ContactGraph::GraphNode *> list)
+{
+	bool exists = false;
+	for (ContactGraph::GraphNode *node : list)
+	{
+		if (node->id == current->id)
+		{
+			exists = true;
 			break;
 		}
 	}
@@ -115,15 +118,17 @@ vector<ContactGraph::GraphNode *> ContactGraph::traverse_graph(string person_id)
 		visited_list.push_back(current);
 
 		//Get the edges of current
-		vector<ContactGraph::GraphEdge*> current_edges = edges[current->loc]->connections;
+		vector<ContactGraph::GraphEdge *> current_edges = edges[current->loc]->connections;
 
 		//Add any unvisited nodes this node is connected to to to_visit
-		for( GraphEdge*edge : current_edges) {
-			bool visited=false;
-			visited = node_in_list(edge->ending_location,visited_list);
-			visited = node_in_list(edge->ending_location, to_visit)||visited;
+		for (GraphEdge *edge : current_edges)
+		{
+			bool visited = false;
+			visited = node_in_list(edge->ending_location, visited_list);
+			visited = node_in_list(edge->ending_location, to_visit) || visited;
 
-			if(!visited) to_visit.push_back(edge->ending_location);
+			if (!visited)
+				to_visit.push_back(edge->ending_location);
 		}
 	}
 	//Return all of the nodes this node is connected to
@@ -139,15 +144,43 @@ int ContactGraph::count_virus_positive_contacts(string person_id)
 
 	*/
 	//Get the starting node
-	ContactGraph::GraphNode* start = find_node(person_id);
+	ContactGraph::GraphNode *start = find_node(person_id);
 	// If they are not in the graph
 	if (start == NULL)
 		return 0;
 
 	//Get traversal of graph
-	vector<ContactGraph::GraphNode*> traversal = traverse_graph(person_id);
+	vector<ContactGraph::GraphNode *> traversal = traverse_graph(person_id);
 
-	unsigned int num_positive_contacts=0;
+	unsigned int num_positive_contacts = 0;
 
+	//Skip the starting node itself
+	for (int i = 1; i < traversal.size(); i++)
+	{
+		//If this person in the traversal is positive
+		if (traversal[i]->status == true)
+			num_positive_contacts++;
+	}
 	return num_positive_contacts;
+}
+
+int ContactGraph::find_largest_cluster_with_two_positive()
+{
+	int max_cluster_size = 0;
+	//Iterate through each node in the graph
+	for (ContactGraph::GraphNode *node : nodes)
+	{
+		//Get the number of positive nodes
+		int num_positive = count_virus_positive_contacts(node->id);
+		//Get number of people in this cluster
+		int cluster_size = traverse_graph(node->id).size();
+		if (num_positive >= 2 && cluster_size > max_cluster_size)
+			max_cluster_size = cluster_size;
+	}
+
+	if(max_cluster_size >= 2) 
+		return max_cluster_size;
+
+	else
+		return -1;
 }
