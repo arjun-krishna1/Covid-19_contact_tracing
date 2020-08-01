@@ -8,7 +8,7 @@ using namespace std;
 // CONSTRUCTOR AND DESTRUCTOR
 
 // PURPOSE: Default/empty constructor
-ContactGraph::ContactGraph(){}
+ContactGraph::ContactGraph() {}
 
 //Get the number of nodes in this graph
 int ContactGraph::get_num_nodes()
@@ -16,16 +16,20 @@ int ContactGraph::get_num_nodes()
 	return nodes.size();
 }
 
-bool ContactGraph::does_edge_exist(string person1_id, string person2_id) {
-	GraphNode* person1 = find_node(person1_id);
-	GraphNode* person2 = find_node(person2_id);
+bool ContactGraph::does_edge_exist(string person1_id, string person2_id)
+{
+	GraphNode *person1 = find_node(person1_id);
+	GraphNode *person2 = find_node(person2_id);
 
 	// If they are not in the graph return false
-	if(person1==NULL||person2==NULL) return false;
+	if (person1 == NULL || person2 == NULL)
+		return false;
 
 	bool edge_exists = false;
-	for(GraphEdge* edge: edges[person1->loc]->connections) {
-		if(edge->ending_location==person2) edge_exists=true;
+	for (GraphEdge *edge : edges[person1->loc]->connections)
+	{
+		if (edge->ending_location == person2)
+			edge_exists = true;
 	}
 
 	return edge_exists;
@@ -38,7 +42,7 @@ bool ContactGraph::insert(vector<string> node_id, vector<bool> node_status)
 	int start_loc = nodes.size();
 	for (int i = 0; i < node_id.size(); i++)
 	{
-		GraphNode* current =new GraphNode(GraphNode(node_id[i], node_status[i], start_loc));
+		GraphNode *current = new GraphNode(GraphNode(node_id[i], node_status[i], start_loc));
 		nodes.push_back(current);
 		edges.push_back(new GraphEdges(GraphEdges(current)));
 		start_loc++;
@@ -46,25 +50,27 @@ bool ContactGraph::insert(vector<string> node_id, vector<bool> node_status)
 	return true;
 }
 
-bool ContactGraph::add_edge(string person1_id, string person2_id) {
-	GraphNode* person1 = find_node(person1_id);
-	GraphNode* person2 = find_node(person2_id);
+bool ContactGraph::add_edge(string person1_id, string person2_id)
+{
+	GraphNode *person1 = find_node(person1_id);
+	GraphNode *person2 = find_node(person2_id);
 
 	//If the people are not in the graph
-	if(person1==NULL||person2==NULL) return false;
+	if (person1 == NULL || person2 == NULL)
+		return false;
 
 	//Go to person1's linked list and add a new connection to person2
 	edges[person1->loc]->connections.push_back(new GraphEdge(person2));
 	//Go to person2's linked list and add a new connection to person1
 	edges[person2->loc]->connections.push_back(new GraphEdge(person1));
-	
+
 	return true;
 }
 
-ContactGraph::GraphNode* ContactGraph::find_node(string person_id)
+ContactGraph::GraphNode *ContactGraph::find_node(string person_id)
 {
 	// base case
-	if (person_id == "" || node_id.empty())
+	if (person_id == "" || nodes.empty())
 		return NULL;
 	//Look for the person in nodes
 	for (int i = 0; i < nodes.size(); i++)
@@ -76,26 +82,52 @@ ContactGraph::GraphNode* ContactGraph::find_node(string person_id)
 	return NULL;
 }
 
+bool ContactGraph::node_in_list(ContactGraph::GraphNode *current, vector<ContactGraph::GraphNode *> list){
+	bool exists=false;
+	for(ContactGraph::GraphNode* node:list) {
+		if(node->id==current->id) {
+			exists=true;
+			break;
+		}
+	}
+	return exists;
+}
 // PURPOSE: traverse the graph starting at person_id and return the nodes that are connected to its
-vector<ContactGraph::GraphNode*> ContactGraph::traverse_graph(string person_id) {
+vector<ContactGraph::GraphNode *> ContactGraph::traverse_graph(string person_id)
+{
+	//Get the node belonging to this ids
 	GraphNode *start = find_node(person_id);
 
-	if(start==NULL) return vector<ContactGraph::GraphNode*>();
+	// If the node isn't in the graph, return an empty vector
+	if (start == NULL)
+		return vector<ContactGraph::GraphNode *>();
 
-	vector<GraphNode *> visited, to_visit;
+	//Prepare variables for traversal
+	vector<GraphNode *> visited_list, to_visit;
 	to_visit.push_back(start);
 
-	while(!to_visit.empty()) {
-		GraphNode* current = to_visit.back();
+	//Iterate while we have more nodes to visit
+	while (!to_visit.empty())
+	{
+		//Visit the last node in to_visit
+		ContactGraph::GraphNode *current = to_visit.back();
 		to_visit.pop_back();
-		visited.push_back(current);
+		visited_list.push_back(current);
 
-		//Get adjacent
-		vector<GraphEdge*> current_edges = edges[current->loc]->connections;
+		//Get the edges of current
+		vector<ContactGraph::GraphEdge*> current_edges = edges[current->loc]->connections;
 
-		bool visited = in(current, visited);
-		visited = 
+		//Add any unvisited nodes this node is connected to to to_visit
+		for( GraphEdge*edge : current_edges) {
+			bool visited=false;
+			visited = node_in_list(edge->ending_location,visited_list);
+			visited = node_in_list(edge->ending_location, to_visit)||visited;
+
+			if(!visited) to_visit.push_back(edge->ending_location);
+		}
 	}
+	//Return all of the nodes this node is connected to
+	return visited_list;
 }
 // who tested positive who are directly connected to the starting individual
 int ContactGraph::count_virus_positive_contacts(string person_id)
@@ -107,19 +139,15 @@ int ContactGraph::count_virus_positive_contacts(string person_id)
 
 	*/
 	//Get the starting node
-	
-
+	ContactGraph::GraphNode* start = find_node(person_id);
 	// If they are not in the graph
 	if (start == NULL)
 		return 0;
 
-	//Init an array to remember the visited nodes, push start into vector
-	vector<GraphNode *> visited, to_visit;
-	to_visit.push_back(start);
+	//Get traversal of graph
+	vector<ContactGraph::GraphNode*> traversal = traverse_graph(person_id);
 
-	unsigned int num_positive_connections=0;
+	unsigned int num_positive_contacts=0;
 
-
-
-	return positive_contacts;
+	return num_positive_contacts;
 }

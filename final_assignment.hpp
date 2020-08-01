@@ -63,8 +63,10 @@ public:
 	// PURPOSE: Find a node given its id and find its o
 	GraphNode *find_node(string person_id);
 
-	vector<GraphNode*> traverse_graph(string person_id);
+	bool node_in_list(GraphNode *current, vector<GraphNode*> list);
 	
+	vector<GraphNode*> traverse_graph(string person_id);
+
 	// PURPOSE: traverse the graph starting at person_id and count the distinct individuals
 	// who tested positive who are directly connected to the starting individual
 	int count_virus_positive_contacts(string person_id);
