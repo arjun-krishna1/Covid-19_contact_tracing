@@ -11,23 +11,25 @@ public:
     bool test1()
     {
         bool valid = true;
-        //Check insert functionality
         ContactGraph graph = ContactGraph();
+
+        //Check insert
         vector<string> names = {"Nate", "Olivia", "Jess", "Shelley"};
         vector<bool> status = {1, 1, 0, 0};
-        graph.insert(names, status);
+        valid = graph.insert(names, status);
         valid = (graph.get_num_nodes() == 4);
 
-        //Check search and inser functionality
+        //Check search and validity of inserts
         ContactGraph::GraphNode *node = graph.find_node(names[3]);
-
-        cout << (node->id) << endl;
-
         valid = node->id == names[3];
 
         //Check add edges functionality
-        graph.add_edge(names[0], names[1]);
+        vector<vector<int>>edges={{0,1},{0,2},{1,3},{1,2},{2,3}};
+        for( vector<int>edge : edges) graph.add_edge(names[edge[0]], names[edge[1]]);
+
         valid=graph.does_edge_exist(names[0], names[1]);
+        valid=graph.does_edge_exist(names[2], names[3]);
+        valid=!graph.does_edge_exist(names[0], names[3]);
         return valid;
     }
 };
