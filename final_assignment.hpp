@@ -38,6 +38,7 @@ protected:
 		vector<GraphEdge*> connections;
 	};
 
+	friend class ContactGraphTest;
 	// set of all nodes in graph
 	vector<GraphNode*> nodes;
 
