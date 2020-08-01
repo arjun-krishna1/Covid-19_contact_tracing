@@ -57,11 +57,14 @@ public:
 	int get_num_nodes();
 	//Get the existence of an edge between these two nodes
 	bool does_edge_exist(string person1, string person2);
-	
+
 	bool insert(vector<string> node_id, vector<bool> node_status);
 	bool add_edge(string person1_id, string person2_id);
 	// PURPOSE: Find a node given its id and find its o
 	GraphNode *find_node(string person_id);
+
+	vector<GraphNode*> traverse_graph(string person_id);
+	
 	// PURPOSE: traverse the graph starting at person_id and count the distinct individuals
 	// who tested positive who are directly connected to the starting individual
 	int count_virus_positive_contacts(string person_id);

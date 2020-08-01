@@ -32,7 +32,7 @@ bool ContactGraph::does_edge_exist(string person1_id, string person2_id) {
 }
 bool ContactGraph::insert(vector<string> node_id, vector<bool> node_status)
 {
-	if (node_id.size() == 0 || node_id.size() != node_status.size())
+	if (node_id.empty() || node_id.size() != node_status.size())
 		return false;
 
 	int start_loc = nodes.size();
@@ -64,7 +64,7 @@ bool ContactGraph::add_edge(string person1_id, string person2_id) {
 ContactGraph::GraphNode* ContactGraph::find_node(string person_id)
 {
 	// base case
-	if (person_id == "" || nodes.size() == 0)
+	if (person_id == "" || node_id.empty())
 		return NULL;
 	//Look for the person in nodes
 	for (int i = 0; i < nodes.size(); i++)
@@ -75,7 +75,28 @@ ContactGraph::GraphNode* ContactGraph::find_node(string person_id)
 	//if not found return null
 	return NULL;
 }
-// PURPOSE: traverse the graph starting at person_id and count the distinct individuals
+
+// PURPOSE: traverse the graph starting at person_id and return the nodes that are connected to its
+vector<ContactGraph::GraphNode*> ContactGraph::traverse_graph(string person_id) {
+	GraphNode *start = find_node(person_id);
+
+	if(start==NULL) return vector<ContactGraph::GraphNode*>();
+
+	vector<GraphNode *> visited, to_visit;
+	to_visit.push_back(start);
+
+	while(!to_visit.empty()) {
+		GraphNode* current = to_visit.back();
+		to_visit.pop_back();
+		visited.push_back(current);
+
+		//Get adjacent
+		vector<GraphEdge*> current_edges = edges[current->loc]->connections;
+
+		bool visited = in(current, visited);
+		visited = 
+	}
+}
 // who tested positive who are directly connected to the starting individual
 int ContactGraph::count_virus_positive_contacts(string person_id)
 {
@@ -86,7 +107,7 @@ int ContactGraph::count_virus_positive_contacts(string person_id)
 
 	*/
 	//Get the starting node
-	GraphNode *start = find_node(person_id);
+	
 
 	// If they are not in the graph
 	if (start == NULL)
@@ -97,6 +118,8 @@ int ContactGraph::count_virus_positive_contacts(string person_id)
 	to_visit.push_back(start);
 
 	unsigned int num_positive_connections=0;
+
+
 
 	return positive_contacts;
 }
