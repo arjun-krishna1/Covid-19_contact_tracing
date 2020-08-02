@@ -19,6 +19,7 @@ protected:
 
 		// Default Constructor
 		GraphNode(string new_id, bool new_status, unsigned int new_loc) : id(new_id), status(new_status), name(""), date(""), loc(new_loc) {}
+		GraphNode(string new_id, string new_name, string new_date, bool new_status, unsigned int new_loc) : id(new_id), status(new_status), name(new_name), date(new_date), loc(new_loc) {}
 	};
 
 	//PURPOSE: Represent the most recent contact between two individuals
@@ -37,7 +38,7 @@ protected:
 		GraphNode *starting_loc;
 		vector<GraphEdge *> connections;
 
-		GraphEdges(GraphNode *new_node) : starting_loc(new_node){}
+		GraphEdges(GraphNode *new_node) : starting_loc(new_node) {}
 	};
 
 	friend class ContactGraphTest;
@@ -59,20 +60,23 @@ public:
 	bool does_edge_exist(string person1, string person2);
 
 	bool insert(vector<string> node_id, vector<bool> node_status);
+	bool insert(vector<string> node_id, vector<string> node_name, vector<string> date, vector<bool> node_status);
 	bool add_edge(string person1_id, string person2_id);
 	// PURPOSE: Find a node given its id and find its o
 	GraphNode *find_node(string person_id);
 
-	bool node_in_list(GraphNode *current, vector<GraphNode*> list);
-	
-	vector<GraphNode*> traverse_graph(string person_id);
+	bool node_in_list(GraphNode *current, vector<GraphNode *> list);
+
+	vector<GraphNode *> traverse_graph(string person_id);
 
 	// PURPOSE: traverse the graph starting at person_id and count the distinct individuals in their network who have tested positive
 	int count_virus_positive_contacts(string person_id);
 
-	//PURPOSE: find the 
+	//PURPOSE: find the
 	int find_largest_cluster_with_two_positive();
 
-
+	//File Interface
+	bool store_graph(string file_name);
+	bool load_graph(string file_name);
 };
 #endif

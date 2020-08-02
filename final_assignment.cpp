@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <stack>
+#include <iostream>
+#include <fstream>
 #include "final_assignment.hpp"
 
 using namespace std;
@@ -50,6 +52,21 @@ bool ContactGraph::insert(vector<string> node_id, vector<bool> node_status)
 	return true;
 }
 
+bool ContactGraph::insert(vector<string> node_id, vector<string> node_name, vector<string> node_date, vector<bool> node_status)
+{
+	if (node_id.empty() || node_id.size() != node_status.size())
+		return false;
+
+	int start_loc = nodes.size();
+	for (int i = 0; i < node_id.size(); i++)
+	{
+		GraphNode *current = new GraphNode(GraphNode(node_id[i], node_name[i], node_date[i], node_status[i], i + start_loc));
+		nodes.push_back(current);
+		edges.push_back(new GraphEdges(GraphEdges(current)));
+		start_loc++;
+	}
+	return true;
+}
 bool ContactGraph::add_edge(string person1_id, string person2_id)
 {
 	GraphNode *person1 = find_node(person1_id);
@@ -178,9 +195,89 @@ int ContactGraph::find_largest_cluster_with_two_positive()
 			max_cluster_size = cluster_size;
 	}
 
-	if(max_cluster_size >= 2) 
+	if (max_cluster_size >= 2)
 		return max_cluster_size;
 
 	else
 		return -1;
+}
+
+//File Interface
+bool ContactGraph::store_graph(string file_name)
+{
+	//create file
+	ofstream file;
+	file.open(file_name);
+
+	//file couldn't be opened
+	if (!file.is_open())
+		return false;
+
+	file << "NODE INFORMATION\n";
+	file << "FORMAT: ID,NAME,DATE,STATUS\n\n";
+	//Write names of graphs in order
+	for (GraphNode *node : nodes)
+	{
+		file << node->id << "," << node->name << "," << node->date << "," << node->status << endl;
+	}
+
+	file << "\nEDGE INFORMATION\n";
+	file << "FORMAT: START\n{END,TIME}\nREPEAT FOR EACH END\n\n";
+	for (int i = 0; i < edges.size(); i++)
+	{
+		file << edges[i]->starting_loc->id << endl;
+		for (GraphEdge *edge : edges[i]->connections)
+		{
+			file << "{" << edge->ending_location->id << "," << edge->time << "}" << endl;
+		}
+		file << "\n\n";
+	}
+	file.close();
+	return true;
+}
+bool ContactGraph::load_graph(string file_name)
+{
+	string line;
+	ifstream file(file_name);
+	if (!file.is_open())
+		return false;
+	//Skip format documentation
+	getline(file, line);
+	getline(file, line);
+	getline(file, line);
+
+	vector<string> new_id, new_name, new_date;
+	vector<bool> new_status;
+	//Get node information
+	while (getline(file, line) && line != "")
+	{
+		int num_list = 0;
+
+		//Fill new_id
+
+		vector<string> entries;
+		int i = 0;
+		for (int j = 0; j < 3; j++)
+		{
+			string entry = "";
+			for (i = i; i < line.size() && line[i] != ','; i++)
+			{
+				entry += line[i];
+			}
+			i++;
+			entries.push_back(entry);
+		}
+
+		new_id.push_back(entries[0]);
+		new_name.push_back(entries[1]);
+		new_date.push_back(entries[2]);
+		bool status_entry = false;
+		if (line[i] == '1')
+			status_entry = true;
+		
+		new_status.push_back(status_entry);
+	}
+	insert(new_id, new_name, new_date, new_status);
+	file.close();
+	return true;
 }

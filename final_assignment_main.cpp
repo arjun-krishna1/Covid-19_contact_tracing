@@ -34,88 +34,147 @@ public:
         return valid;
     }
 
-    // Check count_virus_positive_contacts function
+    //PURPOSE: Check count_virus_positive_contacts function
     bool test2()
     {
         //Initialize graph and variables
         bool valid = true;
         ContactGraph graph = ContactGraph();
 
+        //Insert nodes into graph
         vector<string> names = {"Nate", "Olivia", "Jess", "Shelley"};
         vector<bool> status = {1, 1, 0, 0};
         valid = graph.insert(names, status);
 
+        //Create edges in between nodes
         vector<vector<int>> edges = {{0, 1}, {0, 2}, {1, 3}, {1, 2}, {2, 3}};
         for (vector<int> edge : edges)
             graph.add_edge(names[edge[0]], names[edge[1]]);
 
-        // valid = graph.in(graph.nodes[0], graph.edges[1]->connections);
-        vector<ContactGraph::GraphNode*>traversal = graph.traverse_graph(names[0]);
-
-        vector<string>expected_traversal = {names[0], names[2], names[3], names[1]};
-        for(int i=0; i<expected_traversal.size(); i++) {
-            valid= expected_traversal[i] == traversal[i]->id&&valid;
-        }
-
-        //Check count_virus_positive_contacts with a simple graph
+        //Check count_virus_positive_contacts with person_id corresponding to a positive node
         int expected_positive_contacts=1;
         int positive_contacts=graph.count_virus_positive_contacts(names[0]);
         valid = expected_positive_contacts==positive_contacts && valid;
 
+        //Check count_virus_positive_contacts with person_id corresponding to a negative node
         expected_positive_contacts=2;
         positive_contacts=graph.count_virus_positive_contacts(names[2]);
         valid=expected_positive_contacts==positive_contacts && valid;
 
+        //Insert more nodes into graph
         names = {"Andy", "Kelsey", "Mike", "Maria", "Darryl"};
         status = {0, 0, 1, 1,1};
         valid = graph.insert(names, status);
 
+        //Create edges between new nodes
         edges = {{0, 1}, {0, 2}, {0,4}, {1, 3}, {2, 3}, {3, 4}};
         for (vector<int> edge : edges)
             graph.add_edge(names[edge[0]], names[edge[1]]);
         
-        //Check count_virus_positive_contacts with a more complicated graph
+        //Check count_virus_positive_contacts with two clusters and a negative node
         expected_positive_contacts=3;
         positive_contacts=graph.count_virus_positive_contacts(names[0]);
         valid = expected_positive_contacts==positive_contacts && valid;
 
+        //Check count_virus_positive_contacts with two clusters and a positive node
         expected_positive_contacts=2;
         positive_contacts=graph.count_virus_positive_contacts(names[2]);
+        valid=expected_positive_contacts==positive_contacts && valid;
+
+        //Insert more nodes into a third cluster
+        //Insert more nodes into graph
+        names = {"Arjun", "Igor", "Amitav"};
+        status = {0, 0, 0};
+        valid = graph.insert(names, status);
+
+        //Create edges between new nodes
+        edges = {{0, 1}, {0, 2}, {1, 2}};
+        for (vector<int> edge : edges)
+            graph.add_edge(names[edge[0]], names[edge[1]]);
+
+        //Check count_virus_positive with three clusters on a node within a cluster with no positive nodes
+        expected_positive_contacts=0;
+        positive_contacts=graph.count_virus_positive_contacts(names[0]);
         valid=expected_positive_contacts==positive_contacts && valid;
 
         return valid;
     }
 
+    //PURPOSE: test largest cluster with multiple virus-positive contacts
     bool test3() {
         //Initialize graph and variables
         bool valid = true;
         ContactGraph graph = ContactGraph();
 
+        //Insert nodes into graph
         vector<string> names = {"Nate", "Olivia", "Jess", "Shelley"};
-        vector<bool> status = {1, 1, 0, 0};
+        vector<bool> status = {0, 0, 1, 0};
         valid = graph.insert(names, status);
 
+        //Create edges between nodes
         vector<vector<int>> edges = {{0, 1}, {0, 2}, {1, 3}, {1, 2}, {2, 3}};
         for (vector<int> edge : edges)
             graph.add_edge(names[edge[0]], names[edge[1]]);
 
-        int expected_cluster_size = 4;
+        //Test with a cluster with less than two positive nodes
+        int expected_cluster_size = -1;
         int cluster_size = graph.find_largest_cluster_with_two_positive();
-
         valid = expected_cluster_size==cluster_size && valid;
+
+        //Insert new nodes into graph
         names = {"Andy", "Kelsey", "Mike", "Maria", "Darryl"};
         status = {0, 0, 1, 1,1};
         valid = graph.insert(names, status);
 
+        //Create edges between nodes
         edges = {{0, 1}, {0, 2}, {0,4}, {1, 3}, {2, 3}, {3, 4}};
         for (vector<int> edge : edges)
             graph.add_edge(names[edge[0]], names[edge[1]]);
         
+        //Test with two clusters where only one has more than two positive nodes
         expected_cluster_size = 5;
         cluster_size = graph.find_largest_cluster_with_two_positive();
         valid = expected_cluster_size==cluster_size && valid;
+
+        //Insert new nodes into graph
+        names = {"Arjun", "Igor", "Amitav"};
+        status = {1,1,1};
+        valid = graph.insert(names, status);
+
+        //Create edges between nodes
+        edges = {{0, 1}, {0, 2}, {1, 2}};
+        for (vector<int> edge : edges)
+            graph.add_edge(names[edge[0]], names[edge[1]]);
         
+        //Test with three clusters where two clusters have more than two positive nodes
+        expected_cluster_size = 5;
+        cluster_size = graph.find_largest_cluster_with_two_positive();
+        valid = expected_cluster_size==cluster_size && valid;
         return valid;
+    }
+
+    //PURPOSE: test file reading and writing
+    bool test4() {
+        //Create graph
+        ContactGraph graph = ContactGraph();
+
+        //Insert nodes into graph
+        vector<string> names = {"Nate", "Olivia", "Jess", "Shelley"};
+        vector<bool> status = {1, 1, 0, 0};
+        graph.insert(names, status);
+
+        //Create edges in between nodes
+        vector<vector<int>> edges = {{0, 1}, {0, 2}, {1, 3}, {1, 2}, {2, 3}};
+        for (vector<int> edge : edges)
+            graph.add_edge(names[edge[0]], names[edge[1]]);
+
+        //Write to file
+        string name = "network.txt";
+        bool success = graph.store_graph(name);
+        graph = ContactGraph();
+        success = success&&graph.load_graph(name);
+        cout << graph.traverse_graph(names[0]).size() << endl;
+        return 1;
     }
 };
 
@@ -124,7 +183,9 @@ int main()
     ContactGraphTest test;
 
     bool valid = test.test1();
-    valid = test.test3();
+    valid = test.test2() && valid;
+    valid = test.test3() && valid;
+    valid = test.test4() && valid;
     cout << valid << endl;
     cout << "Hello" << endl;
 }
