@@ -58,6 +58,7 @@ public:
 	int get_num_nodes();
 	//Get the existence of an edge between these two nodes
 	bool does_edge_exist(string person1, string person2);
+	void infect(string person1_id);
 
 	bool insert(vector<string> node_id, vector<bool> node_status);
 	bool insert(vector<string> node_id, vector<string> node_name, vector<string> date, vector<bool> node_status);
@@ -78,5 +79,10 @@ public:
 	//File Interface
 	bool store_graph(string file_name);
 	bool load_graph(string file_name);
+
+	GraphNode* find_same_status_node(ContactGraph::GraphNode* cluster);
+
+	GraphNode* find_friend(ContactGraph::GraphNode* needs_friend);	
+	
 };
 #endif

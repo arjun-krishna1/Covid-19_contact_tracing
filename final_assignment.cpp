@@ -36,6 +36,16 @@ bool ContactGraph::does_edge_exist(string person1_id, string person2_id)
 
 	return edge_exists;
 }
+
+void ContactGraph::infect(string infect_id) {
+	for(int i=0; i<ContactGraph::nodes.size(); i++) {
+		//If found infect them and break
+		if(nodes[i]->id==infect_id) {
+			nodes[i]->status=1;
+			break;
+		}
+	}
+}
 bool ContactGraph::insert(vector<string> node_id, vector<bool> node_status)
 {
 	if (node_id.empty() || node_id.size() != node_status.size())
@@ -63,7 +73,6 @@ bool ContactGraph::insert(vector<string> node_id, vector<string> node_name, vect
 		GraphNode *current = new GraphNode(GraphNode(node_id[i], node_name[i], node_date[i], node_status[i], i + start_loc));
 		nodes.push_back(current);
 		edges.push_back(new GraphEdges(GraphEdges(current)));
-		start_loc++;
 	}
 	return true;
 }
@@ -228,9 +237,9 @@ bool ContactGraph::store_graph(string file_name)
 		file << edges[i]->starting_loc->id << endl;
 		for (GraphEdge *edge : edges[i]->connections)
 		{
-			file << "{" << edge->ending_location->id << "," << edge->time << "}" << endl;
+			file << edge->ending_location->id<<endl; //<< "," << edge->time<< endl;
 		}
-		file << "\n\n";
+		file << "\n";
 	}
 	file.close();
 	return true;
@@ -241,10 +250,10 @@ bool ContactGraph::load_graph(string file_name)
 	ifstream file(file_name);
 	if (!file.is_open())
 		return false;
+
+	const int FIRST_BUFFER=3;
 	//Skip format documentation
-	getline(file, line);
-	getline(file, line);
-	getline(file, line);
+	for (int i=0; i<FIRST_BUFFER; i++) getline(file, line);
 
 	vector<string> new_id, new_name, new_date;
 	vector<bool> new_status;
@@ -274,10 +283,75 @@ bool ContactGraph::load_graph(string file_name)
 		bool status_entry = false;
 		if (line[i] == '1')
 			status_entry = true;
-		
+
 		new_status.push_back(status_entry);
 	}
+
 	insert(new_id, new_name, new_date, new_status);
+	//Check insert
+
+	//Skip human instructions
+	const int SECOND_BUFFER=6;
+	for (int i=0; i<SECOND_BUFFER; i++) getline(file, line);
+
+	//Iterate through each node
+	for (int i=0; i<new_id.size()&&getline(file, line); i++) {
+		vector<ContactGraph::GraphNode*>end;
+		//skip the name of the starting node and iterate through its edges
+		while (line!=""&&getline(file, line)) {
+			add_edge(ContactGraph::nodes[i]->id, line);
+		}
+	}
+
 	file.close();
 	return true;
+}
+
+ContactGraph::GraphNode* ContactGraph::find_same_status_node(ContactGraph::GraphNode* cluster) {
+	//Get their cluster
+	vector<ContactGraph::GraphNode*> traversal = traverse_graph(cluster->id);
+	//They will have no friends
+	if (traversal.size()<=1) return NULL;
+	//Find uninfected node in this cluster
+	for (GraphNode* node: traversal) {
+		//Return this node if it has the same status as cluster and is not itself
+		if (node->status==cluster->status && node->id!=cluster->id) return node;
+	}
+
+	//No uninfected nodes
+	return NULL;
+}
+ContactGraph::GraphNode* ContactGraph::find_friend(ContactGraph::GraphNode* needs_friend) {
+	//Get their cluster
+	GraphNode* poss_friend=find_same_status_node(needs_friend);
+
+	//If no uninfected nodes in this cluster find an uninfected node in the cluster 
+	//with the least infections
+	if (poss_friend!=NULL) return poss_friend;
+
+	else {
+		int min_positive=-1;
+
+		for (ContactGraph::GraphNode* node:ContactGraph::nodes) {
+			//If this node is not the node that needs a friend
+			bool new_friend = node->id!=needs_friend->id;
+			//If this node has the same status as the one that needs a friend and the above condiion
+			new_friend=new_friend && node->status==needs_friend->status;
+			
+			int num_positive_cluster=count_virus_positive_contacts(node->id);
+			//If this node has less positive nodes in its cluster and the above conditions
+			new_friend = (min_positive==-1||num_positive_cluster<min_positive)&&new_friend;
+
+			//Update min_positive
+			min_positive = min_positive<num_positive_cluster?min_positive:num_positive_cluster;
+
+			if(new_friend)	poss_friend=node;
+		}
+	}
+
+	//If we found a negative node
+	if(poss_friend!=NULL) return poss_friend;
+	//No uninfected nodes
+	//Return the first or second node
+	return nodes[0]==needs_friend ? nodes[1]:nodes[0];
 }
