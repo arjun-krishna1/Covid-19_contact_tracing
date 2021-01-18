@@ -3,7 +3,7 @@
 #include <stack>
 #include <iostream>
 #include <fstream>
-#include "final_assignment.hpp"
+#include "graph.hpp"
 
 using namespace std;
 
@@ -18,8 +18,10 @@ int ContactGraph::get_num_nodes()
 	return nodes.size();
 }
 
+//See if the two people have reported an interaction
 bool ContactGraph::does_edge_exist(string person1_id, string person2_id)
 {
+	// Get their nodes
 	GraphNode *person1 = find_node(person1_id);
 	GraphNode *person2 = find_node(person2_id);
 
@@ -27,6 +29,7 @@ bool ContactGraph::does_edge_exist(string person1_id, string person2_id)
 	if (person1 == NULL || person2 == NULL)
 		return false;
 
+	// Else iterate through each edge and see if one of them is between these two
 	bool edge_exists = false;
 	for (GraphEdge *edge : edges[person1->loc]->connections)
 	{
@@ -37,6 +40,7 @@ bool ContactGraph::does_edge_exist(string person1_id, string person2_id)
 	return edge_exists;
 }
 
+// Search for any infected individuals
 void ContactGraph::infect(string infect_id) {
 	for(int i=0; i<ContactGraph::nodes.size(); i++) {
 		//If found infect them and break
@@ -46,6 +50,8 @@ void ContactGraph::infect(string infect_id) {
 		}
 	}
 }
+
+// Insert a new node into the graph given a set of strings and their infection status
 bool ContactGraph::insert(vector<string> node_id, vector<bool> node_status)
 {
 	if (node_id.empty() || node_id.size() != node_status.size())
@@ -62,6 +68,8 @@ bool ContactGraph::insert(vector<string> node_id, vector<bool> node_status)
 	return true;
 }
 
+// Insert a new node into the graph given a set of strings, their infection status and other info
+// about them
 bool ContactGraph::insert(vector<string> node_id, vector<string> node_name, vector<string> node_date, vector<bool> node_status)
 {
 	if (node_id.empty() || node_id.size() != node_status.size())
@@ -76,6 +84,8 @@ bool ContactGraph::insert(vector<string> node_id, vector<string> node_name, vect
 	}
 	return true;
 }
+
+// Add an interaction between two individuals in the graph
 bool ContactGraph::add_edge(string person1_id, string person2_id)
 {
 	GraphNode *person1 = find_node(person1_id);
@@ -93,6 +103,7 @@ bool ContactGraph::add_edge(string person1_id, string person2_id)
 	return true;
 }
 
+// See if a person is in this network
 ContactGraph::GraphNode *ContactGraph::find_node(string person_id)
 {
 	// base case
@@ -108,6 +119,7 @@ ContactGraph::GraphNode *ContactGraph::find_node(string person_id)
 	return NULL;
 }
 
+// See if a person is in a given list
 bool ContactGraph::node_in_list(ContactGraph::GraphNode *current, vector<ContactGraph::GraphNode *> list)
 {
 	bool exists = false;
@@ -160,7 +172,8 @@ vector<ContactGraph::GraphNode *> ContactGraph::traverse_graph(string person_id)
 	//Return all of the nodes this node is connected to
 	return visited_list;
 }
-// who tested positive who are directly connected to the starting individual
+
+// see how many covid-positive people this person has come in contact with
 int ContactGraph::count_virus_positive_contacts(string person_id)
 {
 	/*
@@ -190,6 +203,7 @@ int ContactGraph::count_virus_positive_contacts(string person_id)
 	return num_positive_contacts;
 }
 
+// find the largest cluster of connections with two covid positive people
 int ContactGraph::find_largest_cluster_with_two_positive()
 {
 	int max_cluster_size = 0;
@@ -211,7 +225,7 @@ int ContactGraph::find_largest_cluster_with_two_positive()
 		return -1;
 }
 
-//File Interface
+//output the graph to a file
 bool ContactGraph::store_graph(string file_name)
 {
 	//create file
@@ -244,6 +258,8 @@ bool ContactGraph::store_graph(string file_name)
 	file.close();
 	return true;
 }
+
+// load a graph from a file
 bool ContactGraph::load_graph(string file_name)
 {
 	string line;
@@ -307,6 +323,7 @@ bool ContactGraph::load_graph(string file_name)
 	return true;
 }
 
+// find a node with the same status in their cluster
 ContactGraph::GraphNode* ContactGraph::find_same_status_node(ContactGraph::GraphNode* cluster) {
 	//Get their cluster
 	vector<ContactGraph::GraphNode*> traversal = traverse_graph(cluster->id);
@@ -321,6 +338,8 @@ ContactGraph::GraphNode* ContactGraph::find_same_status_node(ContactGraph::Graph
 	//No uninfected nodes
 	return NULL;
 }
+
+// find the least-risk of infection friend within a cluster
 ContactGraph::GraphNode* ContactGraph::find_friend(ContactGraph::GraphNode* needs_friend) {
 	//Get their cluster
 	GraphNode* poss_friend=find_same_status_node(needs_friend);

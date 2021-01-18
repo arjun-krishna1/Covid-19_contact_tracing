@@ -1,5 +1,5 @@
-#ifndef FINAL_ASSIGNMENT
-#define FINAL_ASSIGNMENT
+#ifndef GRAPH
+#define GRAPH
 
 #include <string>
 #include <vector>
